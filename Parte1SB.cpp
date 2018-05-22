@@ -227,14 +227,19 @@ void MACROS(ifstream &myfile,vector<string> *tokens,map<string,int> *MNT,multima
         }
       }*/
     
-    for(vector<string>:: iterator it_tokens = (*tokens).begin(); it_tokens != (*tokens).end(); it_tokens++){
+    for(vector<string>:: iterator it_tokens = (*tokens).begin(); it_tokens != (*tokens).end(); ++it_tokens){
       if(*it_tokens == nome_macro){
         //it_tokens++;
         int j = it_tokens-(*tokens).begin();
         (*tokens).insert(it_tokens, it_MDT->second.begin(), it_MDT->second.end());
         it_tokens = (*tokens).begin()+j+it_MDT->second.size();
         j = it_tokens - (*tokens).begin();
+
+        /*if((it_tokens)==(*tokens).end()){cout<<"\n\nENTROU END\n\n";
+          (*tokens).pop_back();}
+          else cout<<"\nENTROU ELSE\n";*/
         it_tokens=(*tokens).erase(it_tokens);cout<<"\n\nAPAGOU\n\n";
+        
         /*if((it_tokens) == (*tokens).end()){cout<<"\nEntrou"<<endl;
           (*tokens).end()=it_tokens-1;
           (*tokens).erase((*tokens).begin() + j);
