@@ -137,9 +137,13 @@ void MACROS(ifstream &myfile,vector<string> *tokens,map<string,int> *MNT,multima
 //MDT: contem os corpos das macros
   vector<string> vector_quebrado,MACRO;
   int tamanho=0, tamanho_vector=0, contador=0, aux=0, aux2=0, v=0, marcador=0, i=0;
+  int *p;
   tamanho = (*tokens).size();
+  p=&tamanho;
   //while(((*tokens)[i])!=(*tokens).end()){
-  for(int i=0;i<tamanho;i++){
+  //for(vector<string>:: iterator percorre = (*tokens).begin();percorre!=(*tokens).end();++percorre)
+  for(int i=0;i<*p;i++){
+    tamanho = (*tokens).size();
     vector_quebrado = quebra_tokens((*tokens)[i]);
     contador=0;
 
@@ -177,16 +181,17 @@ void MACROS(ifstream &myfile,vector<string> *tokens,map<string,int> *MNT,multima
           v++;
         }
 
-        int tam_macro = MACRO.size();
+        (*MDT).insert(pair <string,vector<string>> (vector_quebrado[aux2-1],MACRO));
+        
+        int tam_macro = MACRO.size() + 2;
+        MACRO.clear();
 
         //APAGA A MACRO DO ARQUIVO
-        /*for (contador = 0; contador<tam_macro; contador++){
+        for (contador = 0; contador<tam_macro; contador++){
         cout<<"\nApagou\n"<<endl;
         (*tokens).erase((*tokens).begin() + marcador);
-        }*/
-
-        (*MDT).insert(pair <string,vector<string>> (vector_quebrado[aux2-1],MACRO));
-        MACRO.clear();
+        }
+        i=i-tam_macro;
       }
       aux2++;
       /*if((vector_quebrado[aux2]=="SECTION")&&(vector_quebrado[aux2+1]=="DATA")){
@@ -229,6 +234,7 @@ void MACROS(ifstream &myfile,vector<string> *tokens,map<string,int> *MNT,multima
         (*tokens).insert(it_tokens, it_MDT->second.begin(), it_MDT->second.end());
         it_tokens = (*tokens).begin()+j+it_MDT->second.size();
         j = it_tokens - (*tokens).begin();
+        it_tokens=(*tokens).erase(it_tokens);cout<<"\n\nAPAGOU\n\n";
         /*if((it_tokens) == (*tokens).end()){cout<<"\nEntrou"<<endl;
           (*tokens).end()=it_tokens-1;
           (*tokens).erase((*tokens).begin() + j);
