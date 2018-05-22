@@ -260,7 +260,7 @@ int main () {
   vector<string> tokens, quebrado; //tokens contem cada linha do codigo como 1 elemento. Quebrado quebra a linha em tokens menores
 
   string line,line_aux;
-  ifstream myfile ("Para_Ler.txt");
+  ifstream myfile ("Arquivo_original.txt");
   if (myfile.is_open())
   {
     myfile.seekg(3,ios::beg);
@@ -350,6 +350,14 @@ int main () {
     cout<<endl;
     for(vector<string>:: iterator it_vec = tokens.begin();it_vec!=tokens.end();++it_vec)
       cout<<*it_vec<<endl;
+
+    ofstream arquivo_novo("Arquivo_modificado.txt");
+
+    if (arquivo_novo.is_open()){
+      for(vector<string>:: iterator it = tokens.begin(); it!= tokens.end(); ++it)
+        arquivo_novo<<*it<<endl;
+      arquivo_novo.close();
+    }else cout<<"\nNao e possivel abrir arquivo"<<endl;
 
     tokens.erase(tokens.begin(),tokens.end());
     tokens.clear();
