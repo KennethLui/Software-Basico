@@ -132,16 +132,120 @@ void DIRETIVAS_EQU_IF(ifstream &myfile,vector<string> *tokens,map<string,int> *D
   return;
 }
 
-void MACROS(ifstream &myfile,vector<string> *tokens,map<string,int> *MNT,map<string,int> *MDT){
+void MACROS(ifstream &myfile,vector<string> *tokens,map<string,int> *MNT,multimap<string,vector<string>> *MDT){
 //MNT: contem os nomes das macros definidas no programa
 //MDT: contem os corpos das macros
+  vector<string> vector_quebrado,MACRO;
+  int tamanho=0, tamanho_vector=0, contador=0, aux=0, aux2=0, v=0, marcador=0, i=0;
+  tamanho = (*tokens).size();
+  //while(((*tokens)[i])!=(*tokens).end()){
+  for(int i=0;i<tamanho;i++){
+    vector_quebrado = quebra_tokens((*tokens)[i]);
+    contador=0;
+
+    cout<<"\nVector quebrado: \n";
+    for(v=0;v<vector_quebrado.size();v++)
+      cout<<vector_quebrado[v]<<endl;
+
+    aux=vector_quebrado.size();
+    aux2=0;
+    while(aux2!=aux){
+      if(vector_quebrado[aux2]=="MACRO"){ cout<<"\n Aux2: "<<aux2<<endl;
+      marcador = i;
+      //MNT informa o numero de argumentos e o local da MDT onde esta seu corpo. Como estamos usando MAP nao precisamos saber a linha
+      
+        contador=vector_quebrado.size()-aux2-1;
+        cout<<"\nNumero de argumentos: "<<contador;
+        /*v = aux2+1;
+        while(v<vector_quebrado.size()){ //Conta quantos parametros a MACRO tem -> contador
+        cout<<"Entrou"<<endl;
+        contador++;
+        }*/
+        //Passa primeiro elemento como nome do vetor e tamanho_vector como numero de argumentos
+        
+        (*MNT).insert(pair <string,int> (vector_quebrado[aux2-1],contador));
+        i++;
+        /*do{cout<<"Entrou"<<endl;
+          MACRO.push_back((*tokens)[i]);
+          i++;
+        }while((*tokens)[i]!="ENDMACRO");*/
+        v=0;
+        while((*tokens)[i]!="ENDMACRO"){
+          cout<<"Entrou"<<endl;
+          MACRO.push_back((*tokens)[i]);
+          i++;
+          v++;
+        }
+
+        int tam_macro = MACRO.size();
+
+        //APAGA A MACRO DO ARQUIVO
+        /*for (contador = 0; contador<tam_macro; contador++){
+        cout<<"\nApagou\n"<<endl;
+        (*tokens).erase((*tokens).begin() + marcador);
+        }*/
+
+        (*MDT).insert(pair <string,vector<string>> (vector_quebrado[aux2-1],MACRO));
+        MACRO.clear();
+      }
+      aux2++;
+      /*if((vector_quebrado[aux2]=="SECTION")&&(vector_quebrado[aux2+1]=="DATA")){
+        cout<<"Chegou no SECTION DATA\n";
+        i=tamanho;
+      }*/
+    }
+  }
+  //i++;
+  //}
+  tamanho_vector=MACRO.size();
+  cout<<"\n\nMACRO: "<<endl;
+  //Se quiser printar macro precisa tirar o MACRO.clear da linha 170 depois do MDT insert
+  /*for(aux=0;aux<tamanho_vector;aux++){
+    cout<<MACRO[aux]<<endl;
+  }*/
+  MACRO.clear();
+  vector_quebrado.clear();
+
+  string nome_macro;
+  int tam = 0, j = 0;
+  //Substituindo as MACROS no vetor tokens
+  for(multimap<string,vector<string>>:: iterator it_MDT = (*MDT).begin(); it_MDT!=(*MDT).end();it_MDT++){
+      nome_macro = it_MDT->first;
+
+      /*tam = (*tokens).size();
+      for(int cont = 0; cont < tam; cont++){
+        if((*tokens)[cont] == nome_macro){
+          j = cont
+          (*tokens).insert((*tokens).begin() + cont, it_MDT->second.begin(), it_MDT->second.end());
+          cont = j+it_MDT->second.size();
+          (*tokens).erase((*tokens).begin() + cont);
+        }
+      }*/
+    
+    for(vector<string>:: iterator it_tokens = (*tokens).begin(); it_tokens != (*tokens).end(); it_tokens++){
+      if(*it_tokens == nome_macro){
+        //it_tokens++;
+        int j = it_tokens-(*tokens).begin();
+        (*tokens).insert(it_tokens, it_MDT->second.begin(), it_MDT->second.end());
+        it_tokens = (*tokens).begin()+j+it_MDT->second.size();
+        j = it_tokens - (*tokens).begin();
+        /*if((it_tokens) == (*tokens).end()){cout<<"\nEntrou"<<endl;
+          (*tokens).end()=it_tokens-1;
+          (*tokens).erase((*tokens).begin() + j);
+        }else
+        (*tokens).erase((*tokens).begin() + j);*/
+      }
+    }
+
+  }
+
   return;
 }
 
 int main () {
 
-  map <string,int> Mapeamento_de_linhas;
-  map <string,int> DIRETIVAS,MNT,MDT;
+  map <string,int> Mapeamento_de_linhas, DIRETIVAS, MNT;
+  multimap <string,vector<string>> MDT;
   vector<string> tokens, quebrado; //tokens contem cada linha do codigo como 1 elemento. Quebrado quebra a linha em tokens menores
 
   string line,line_aux;
@@ -204,10 +308,47 @@ int main () {
       std::cout << it->first << " " << it->second.first << " " << it->second.second << "\n";
     }*/
 
+    MACROS(myfile,&tokens,&MNT,&MDT);
+    //Printar MNT
+    cout<<"\nPrintando MAP MNT: "<<endl;
+    /*for(map<string,int>::const_iterator it_MNT = MNT.begin(); it_MNT != MNT.end(); ++it_MNT){
+      std::cout << it_MNT->first << " " << it_MNT->second.first << " " << it_MNT->second.second << "\n";
+    }*/
+
+    for(map<string,int>::const_iterator it_MNT = MNT.begin(); it_MNT != MNT.end(); ++it_MNT){
+      std::cout << it_MNT->first << " " << it_MNT->second << "\n";
+    }
+
+    //Printar MDT
+    cout<<"\nPrintando MAP MDT:"<<endl;
+
+    multimap <string, vector<string> >::const_iterator it;
+
+    for (it = MDT.begin(); it != MDT.end(); ++it)
+    {
+        cout << it->first << "\t" ;
+
+        vector<string>::const_iterator itVec;
+        for (itVec = it->second.begin(); itVec != it->second.end(); ++itVec)
+        {
+            cout << *itVec <<" ";
+        }
+    cout<<endl;
+    }
+
+    cout<<endl;
+    for(vector<string>:: iterator it_vec = tokens.begin();it_vec!=tokens.end();++it_vec)
+      cout<<*it_vec<<endl;
+
     tokens.erase(tokens.begin(),tokens.end());
     tokens.clear();
     quebrado.erase(quebrado.begin(),quebrado.end());
     quebrado.clear();
     DIRETIVAS.clear();
+    MDT.clear();
+    MNT.clear();
+    Mapeamento_de_linhas.clear();
+    MNT.clear();
+    MDT.clear();
   return 0;
 }
