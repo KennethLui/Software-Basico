@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include <algorithm>
 using namespace std;
 
 //Diretivas a serem encontradas: SECTION, CONST, SPACE, IF, EQU, MACRO, ENDMACRO
@@ -17,11 +18,11 @@ vector<string> quebra_tokens(string line){
   copy(line.begin(),line.end(),Aux);
   Aux[line.size()]='\0';
 
-  buffer=strtok(Aux,".;: \n"); //Cada palavra agora e um token, ignorando os sinais
+  buffer=strtok(Aux,".,;: \n"); //Cada palavra agora e um token, ignorando os sinais
 
   while(buffer!=NULL){
       quebrado.push_back(buffer);
-      buffer=strtok(NULL," .;: \n");
+      buffer=strtok(NULL," .,;: \n");
   }
 
   return quebrado;
@@ -30,6 +31,8 @@ vector<string> quebra_tokens(string line){
 void token_linha(string line, vector<string> *tokens){
   char *buffer;
   char *Aux;
+
+  transform(line.begin(), line.end(),line.begin(), ::toupper);
 
   Aux= new char[line.size() + 1]; //Cria um ponteiro para o line pq o strtok precisa de um ponteiro como argumento
   copy(line.begin(),line.end(),Aux);
@@ -142,7 +145,10 @@ void MACROS(ifstream &myfile,vector<string> *tokens,map<string,int> *MNT,multima
       //MNT informa o numero de argumentos e o local da MDT onde esta seu corpo. Como estamos usando MAP nao precisamos saber a linha
       
         contador=vector_quebrado.size()-aux2-1;
-        
+
+        //IDENTIFICA SE O NUMERO DE ARGUMENTOS REQUERIDOS PELA MACRO PASSA DE 4 E MOSTRA ERRO SE FOR MAIOR
+        if(contador>4)
+          cout<<"\nERRO:" << "\tNUMERO DE ARGUMENTOS MAIOR QUE 4 PARA A MACRO: " << vector_quebrado[aux2-1] << "\n\tNUMERO DE ARGUMENTOS USADOS: " << contador << endl;
         //Descomenta se quiser ver o numero de argumentos de cada MACRO
         //cout<<"\nNumero de argumentos: "<<contador;
 
@@ -181,21 +187,39 @@ void MACROS(ifstream &myfile,vector<string> *tokens,map<string,int> *MNT,multima
   MACRO.clear();
   vector_quebrado.clear();
 
+  //PARA MOSTRAR COMO FICOU O CODIGO DEPOIS DE APAGAR DECLARACOES DE MACRO
+  /*cout<<"\nComo ficou o codigo depois de apagar MACROS\n";
+  for(vector<string>:: iterator it_vec = (*tokens).begin();it_vec!=(*tokens).end();++it_vec)
+      cout<<*it_vec<<endl;
+  */
+
   string nome_macro;
-  int tam = 0, j = 0;
+  vector<string> copia;
+  int tam = 0, j = 0, token_quebrado = 0; i = 0;
   //Substituindo as MACROS no vetor tokens
   for(multimap<string,vector<string>>:: iterator it_MDT = (*MDT).begin(); it_MDT!=(*MDT).end();it_MDT++){
       nome_macro = it_MDT->first;
-    
+      
     for(vector<string>:: iterator it_tokens = (*tokens).begin(); it_tokens != (*tokens).end(); ++it_tokens){
-      if(*it_tokens == nome_macro){
-        int j = it_tokens-(*tokens).begin();
-        (*tokens).insert(it_tokens, it_MDT->second.begin(), it_MDT->second.end());
-        it_tokens = (*tokens).begin()+j+it_MDT->second.size();
-        j = it_tokens - (*tokens).begin();
+      copia = quebra_tokens(*it_tokens);
+      aux=copia.size();
+      for (i=0;i<aux;i++){
 
-        it_tokens=(*tokens).erase(it_tokens);
-        
+        if(copia[i] == nome_macro){
+
+          //IDENTIFICA SE O NUMERO DE ARGUMENTOS PASSADOS ESTA DE ACORDO COM O NUMERO DE ARGUMENTOS REQUERIDOS E MOSTRA ERRO SE NAO ESTIVER
+          if ((aux-i-1)!=((*MNT).find(copia[i]) -> second))
+            cout << "\nERRO:" << "\tNUMERO DE ARGUMENTOS INVALIDO PARA MACRO: " << copia[i] << "\n\tNUMERO DE ARGUMENTOS PASSADOS: " << (aux-i-1) << "\n\tNUMERO DE ARGUMENTOS REQUERIDO: " << (*MNT).find(copia[i]) -> second << endl;
+
+          int j = it_tokens-(*tokens).begin();
+          (*tokens).insert(it_tokens, it_MDT->second.begin(), it_MDT->second.end());
+          it_tokens = (*tokens).begin()+j+it_MDT->second.size();
+          j = it_tokens - (*tokens).begin();
+
+          it_tokens=(*tokens).erase(it_tokens);
+          
+          i=aux;
+        }
       }
     }
 
