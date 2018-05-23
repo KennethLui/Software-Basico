@@ -65,7 +65,7 @@ void DIRETIVAS_EQU_IF(ifstream &myfile,vector<string> *tokens,map<string,int> *D
 
         for (int b=0;b<v;b++){
           if (vector_quebrado[b]==EQU){
-            //Insere o token antes no EQU no map com o seu valor atribuido
+            //Insere o token antes do EQU no map com o seu valor atribuido
             AUX=vector_quebrado[b-1];
             AUX2=stoi(vector_quebrado[b+1]);
             (*DIRETIVAS).insert(pair <string,int> (AUX,AUX2));
@@ -112,6 +112,11 @@ void DIRETIVAS_EQU_IF(ifstream &myfile,vector<string> *tokens,map<string,int> *D
   }
   
   myfile.close();
+
+  cout<<"\nCOMO FICA DEPOIS DE TRATAR EQU E IF\n";
+  for(vector<string>:: iterator it_vec = (*tokens).begin();it_vec!=(*tokens).end();++it_vec)
+    cout<<*it_vec<<endl;
+  cout<<endl;
 
   return;
 }
@@ -231,6 +236,7 @@ void MACROS(ifstream &myfile,vector<string> *tokens,map<string,int> *MNT,multima
 int main () {
 
   map <string,int> Mapeamento_de_linhas, DIRETIVAS, MNT;
+  map <int,int> EXPANSAO; //Primeiro elemento e a linha que houve insercao de macro e a segunda linha é o tamanho da macro
   multimap <string,vector<string>> MDT;
   vector<string> tokens, quebrado; //tokens contem cada linha do codigo como 1 elemento. Quebrado quebra a linha em tokens menores
 
