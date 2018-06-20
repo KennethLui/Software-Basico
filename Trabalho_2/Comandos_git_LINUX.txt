@@ -1,0 +1,18 @@
+Comandos Git Hub:
+
+Salvar tudo:
+git add .
+
+Salvar só o que quero:
+git add Nome_do_arquivo
+
+---------------------
+Se quiser ver o status:
+git status
+---------------------
+Salva o arquivo no repositório do PC:
+git commit -m "Nome do arquivo"
+
+---------------------
+Salva o arquivo na nuvem:
+git push
