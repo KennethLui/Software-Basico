@@ -34,8 +34,54 @@ SIZE_MOD EQU $-MOD
 SAIR db "- 6: SAIR",0dh,0ah
 SIZE_SAIR EQU $-SAIR
 
-FUNC_ESCOLHIDO db "A FUNÇÃO ESCOLHIDA FOI: "
+FUNC_ESCOLHIDO db "A OPÇÃO ESCOLHIDA FOI: "
 SIZE_FUNC_ESCOLHIDO EQU $-FUNC_ESCOLHIDO
+
+;TESTES DE ENTRADA DE FUNÇÃO
+
+MSG_TESTE db 0dh,0ah,"MENSAGEM DE TESTE",0dh,0ah
+SIZE_MSG_TESTE EQU $-MSG_TESTE
+
+MSG_SOMA db "SOMA",0dh,0ah
+SIZE_MSG_SOMA EQU $-MSG_SOMA
+
+MSG_SUBT db  "SUBTRAÇÃO",0dh,0ah
+SIZE_MSG_SUBT EQU $-MSG_SUBT
+
+MSG_MULT db "MULTIPLICAÇÃO",0dh,0ah
+SIZE_MSG_MULT EQU $-MSG_MULT
+
+MSG_DIVI db "DIVISÃO",0dh,0ah
+SIZE_MSG_DIVI EQU $-MSG_DIVI
+
+MSG_MOD db "MOD",0dh,0ah
+SIZE_MSG_MOD EQU $-MSG_MOD
+
+MSG_SAIR db "SAIR DO PROGRAMA",0dh,0ah
+SIZE_MSG_SAIR EQU $-MSG_SAIR
+
+;MENSAGENS PARA FUNÇÕES
+MAIS db " + "
+SIZE_MAIS EQU $-MAIS
+
+MENOS db " - "
+SIZE_MENOS EQU $-MENOS
+
+MULTIPLICA db " * "
+SIZE_MULTIPLICA EQU $-MULTIPLICA
+
+DIVIDE db " / "
+SIZE_DIVIDE EQU $-DIVIDE
+
+MODULO db " % "
+SIZE_MODULO EQU $-MODULO
+
+SAI db "FINALIZANDO PROGRAMA",0dh,0ah
+SIZE_SAI EQU $-SAI
+
+IGUAL db " = "
+SIZE_IGUAL EQU $-IGUAL
+;FIM DAS MENSAGENS DE FUNÇÕES
 
 msg_num1 db "Insira o primeiro numero: "
 SIZE_msg1 EQU $-msg_num1
@@ -47,11 +93,11 @@ nwln db 0Dh,0Ah
 SIZE_nwln EQU $-nwln
 
 section .bss
-num1 resb 1
-num2 resb 1
-resultado resb 16
-NOME resb 16
-ESCOLHA resb 1
+num1 resb 10
+num2 resb 10
+resultado resb 100
+NOME resb 100
+ESCOLHA resb 2
 
 section .text
 _start:
@@ -72,7 +118,7 @@ _start:
     mov eax,3
     mov ebx,0
     mov ecx,NOME
-    mov edx,16
+    mov edx,100
     int 80h
 
     mov eax,4
@@ -92,7 +138,7 @@ _start:
     mov eax,4
     mov ebx,1
     mov ecx,NOME
-    mov edx,16
+    mov edx,100
     int 80h
 
     mov eax,4
@@ -160,10 +206,10 @@ _start:
     mov eax,3
     mov ebx,0
     mov ecx,ESCOLHA
-    mov edx,1
+    mov edx,2
     int 80h
 
-    sub BYTE [ESCOLHA],0x30
+    ;sub BYTE [ESCOLHA],0x30
 
     mov eax,4
     mov ebx,1
@@ -171,12 +217,19 @@ _start:
     mov edx,SIZE_nwln
     int 80h
 
-;COMPARAR
-;Tentativa de zerar buffer
-;    mov eax,0
-;    mov ebx,0
-;    mov ecx,0
-;    mov edx,0
+;MOSTRAR A OPÇÃO
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,FUNC_ESCOLHIDO
+    mov edx,SIZE_FUNC_ESCOLHIDO
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,ESCOLHA
+    mov edx,2
+    int 80h
 
     mov eax,4
     mov ebx,1
@@ -187,7 +240,7 @@ _start:
     mov eax,3
     mov ebx,0
     mov ecx,num1
-    mov edx,1
+    mov edx,10
     int 80h
 
     mov eax,4
@@ -199,8 +252,42 @@ _start:
     mov eax,3
     mov ebx,0
     mov ecx,num2
-    mov edx,1
+    mov edx,10
     int 80h
+
+    ;COMPARAR
+    sub BYTE [ESCOLHA],0x30
+
+    cmp BYTE [ESCOLHA],1
+    jne NOT_SOMA
+    call FUNC_SOMA
+
+NOT_SOMA:
+    cmp BYTE [ESCOLHA],2
+    jne NOT_SUBT
+    call FUNC_SUBT
+
+NOT_SUBT:
+    cmp BYTE [ESCOLHA],3
+    jne NOT_MULTI
+    call FUNC_MULTI
+
+NOT_MULTI:
+    cmp BYTE [ESCOLHA],4
+    jne NOT_DIVI
+    call FUNC_DIVI
+
+NOT_DIVI:
+    cmp BYTE [ESCOLHA],5
+    jne NOT_MOD
+    call FUNC_MOD
+
+NOT_MOD:
+    cmp BYTE [ESCOLHA],6
+    jne NOT_SAIR
+    call FUNC_SAIR
+NOT_SAIR:
+    ;FIM DA COMPARAÇÃO
 
     mov BL,[num2]
     sub BL,0x30
@@ -221,7 +308,7 @@ _start:
     mov eax,4
     mov ebx,1
     mov ecx,resultado
-    mov edx,16
+    mov edx,100
 
     mov eax,4
     mov ebx,1
@@ -234,6 +321,38 @@ _start:
     int 80h
 
 FUNC_SOMA:
+    ;MOSTRA MENSAGEM DA FUNÇÃO
+    mov eax,4
+    mov ebx,1
+    mov ecx,MSG_SOMA
+    mov edx,SIZE_MSG_SOMA
+    int 80h
+
+    ;MOSTRA OPERAÇÃO
+    mov eax,4
+    mov ebx,1
+    mov ecx,num1
+    mov edx,10
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,MAIS
+    mov edx,SIZE_MAIS
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,num2
+    mov edx,10
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,IGUAL
+    mov edx,SIZE_IGUAL
+    int 80h
+    ;TERMINOU DE MOSTRAR OPERAÇÃO
     enter 0,0
     ;push ebp
     ;mov ebp,esp
@@ -248,18 +367,164 @@ FUNC_SOMA:
     ret 4
 
 FUNC_SUBT:
+    ;MOSTRA MENSAGEM DA FUNÇÃO
+    mov eax,4
+    mov ebx,1
+    mov ecx,MSG_SUBT
+    mov edx,SIZE_MSG_SUBT
+    int 80h
+
+    ;MOSTRA OPERAÇÃO
+    mov eax,4
+    mov ebx,1
+    mov ecx,num1
+    mov edx,10
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,MENOS
+    mov edx,SIZE_MENOS
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,num2
+    mov edx,10
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,IGUAL
+    mov edx,SIZE_IGUAL
+    int 80h
+    ;TERMINOU DE MOSTRAR OPERAÇÃO
+
     ret
 
 FUNC_MULTI:
+    ;MOSTRA MENSAGEM DA FUNÇÃO
+    mov eax,4
+    mov ebx,1
+    mov ecx,MSG_MULT
+    mov edx,SIZE_MSG_MULT
+    int 80h
+
+    ;MOSTRA OPERAÇÃO
+    mov eax,4
+    mov ebx,1
+    mov ecx,num1
+    mov edx,10
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,MULTIPLICA
+    mov edx,SIZE_MULTIPLICA
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,num2
+    mov edx,10
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,IGUAL
+    mov edx,SIZE_IGUAL
+    int 80h
+    ;TERMINOU DE MOSTRAR OPERAÇÃO
+
     ret
 
 FUNC_DIVI:
+    ;MOSTRA MENSAGEM DA FUNÇÃO
+    mov eax,4
+    mov ebx,1
+    mov ecx,MSG_DIVI
+    mov edx,SIZE_MSG_DIVI
+    int 80h
+
+    ;MOSTRA A OPERAÇÃO
+    mov eax,4
+    mov ebx,1
+    mov ecx,num1
+    mov edx,10
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,DIVIDE
+    mov edx,SIZE_DIVIDE
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,num2
+    mov edx,10
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,IGUAL
+    mov edx,SIZE_IGUAL
+    int 80h
+    ;TERMINOU DE MOSTRAR OPERAÇÃO
+
     ret
 
 FUNC_MOD:
+    ;MOSTRA MENSAGEM DA FUNÇÃO
+    mov eax,4
+    mov ebx,1
+    mov ecx,MSG_MOD
+    mov edx,SIZE_MSG_MOD
+    int 80h
+
+    ;MOSTRA OPERAÇÃO
+    mov eax,4
+    mov ebx,1
+    mov ecx,num1
+    mov edx,10
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,MODULO
+    mov edx,SIZE_MODULO
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,num2
+    mov edx,10
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,IGUAL
+    mov edx,SIZE_IGUAL
+    int 80h
+    ;TERMINOU DE MOSTRAR OPERAÇÃO
+
     ret
 
 FUNC_SAIR:
+    ;MOSTRA MENSAGEM DA FUNÇÃO
+    mov eax,4
+    mov ebx,1
+    mov ecx,MSG_SAIR
+    mov edx,SIZE_MSG_SAIR
+    int 80h
+
+    ;MOSTRA OPERAÇÃO
+    mov eax,4
+    mov ebx,1
+    mov ecx,SAI
+    mov edx,SIZE_SAI
+    int 80h
+
     mov eax,1
     mov ebx,0
     int 80h
