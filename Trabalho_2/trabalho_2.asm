@@ -87,15 +87,15 @@ msg_num1 db "Insira o primeiro numero: "
 SIZE_msg1 EQU $-msg_num1
 msg_num2 db "Insira o segundo numero: "
 SIZE_msg2 EQU $-msg_num2
-msg_resultado db "O resultado e: "
+msg_resultado db 0dh,0ah,"O resultado e: "
 SIZE_resultado EQU $-msg_resultado
 nwln db 0Dh,0Ah
 SIZE_nwln EQU $-nwln
 
 section .bss
-num1 resb 10
-num2 resb 10
-resultado resb 100
+num1 resb 4
+num2 resb 4
+resultado resb 4
 NOME resb 100
 ESCOLHA resb 2
 
@@ -240,7 +240,7 @@ _start:
     mov eax,3
     mov ebx,0
     mov ecx,num1
-    mov edx,10
+    mov edx,4
     int 80h
 
     mov eax,4
@@ -252,11 +252,19 @@ _start:
     mov eax,3
     mov ebx,0
     mov ecx,num2
-    mov edx,10
+    mov edx,4
     int 80h
 
     ;COMPARAR
     sub BYTE [ESCOLHA],0x30
+
+    mov eax,[num1]
+    sub eax,0x30
+    push WORD [num1]
+
+    mov eax,[num2]
+    sub eax,0x30
+    push WORD [num2]
 
     cmp BYTE [ESCOLHA],1
     jne NOT_SOMA
@@ -289,15 +297,7 @@ NOT_MOD:
 NOT_SAIR:
     ;FIM DA COMPARAÇÃO
 
-    mov BL,[num2]
-    sub BL,0x30
-
-    push WORD [num1]
-    push WORD [num2]
-
-    call FUNC_SOMA
-
-    POP WORD [resultado]
+    ;POP WORD [resultado]
 
     mov eax,4
     mov ebx,1
@@ -308,7 +308,8 @@ NOT_SAIR:
     mov eax,4
     mov ebx,1
     mov ecx,resultado
-    mov edx,100
+    mov edx,4
+    int 80h
 
     mov eax,4
     mov ebx,1
@@ -332,7 +333,7 @@ FUNC_SOMA:
     mov eax,4
     mov ebx,1
     mov ecx,num1
-    mov edx,10
+    mov edx,4
     int 80h
 
     mov eax,4
@@ -344,7 +345,7 @@ FUNC_SOMA:
     mov eax,4
     mov ebx,1
     mov ecx,num2
-    mov edx,10
+    mov edx,4
     int 80h
 
     mov eax,4
@@ -356,14 +357,31 @@ FUNC_SOMA:
     enter 0,0
     ;push ebp
     ;mov ebp,esp
-    push AX
-    mov AX,[EBP+10]
-    add AX,[EBP+8]
-    mov [EBP+12],AX
-    pop AX
-    leave
+    ;push AX
+    ;mov AX,[EBP+10]
+    ;add AX,[EBP+8]
+    ;mov [EBP+12],AX
+    ;pop AX
+    ;leave
     ;mov ebp,esp
     ;pop ebp
+    mov eax,0
+    mov eax,[num1]
+    sub eax,0x30
+    mov ebx,[num2]
+    sub ebx,0x30
+    add eax,ebx
+    add eax,0x30
+
+    mov [resultado],eax
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,resultado
+    mov edx,4
+    int 80h
+
+    leave
     ret 4
 
 FUNC_SUBT:
@@ -378,7 +396,7 @@ FUNC_SUBT:
     mov eax,4
     mov ebx,1
     mov ecx,num1
-    mov edx,10
+    mov edx,4
     int 80h
 
     mov eax,4
@@ -390,7 +408,7 @@ FUNC_SUBT:
     mov eax,4
     mov ebx,1
     mov ecx,num2
-    mov edx,10
+    mov edx,4
     int 80h
 
     mov eax,4
@@ -414,7 +432,7 @@ FUNC_MULTI:
     mov eax,4
     mov ebx,1
     mov ecx,num1
-    mov edx,10
+    mov edx,4
     int 80h
 
     mov eax,4
@@ -426,7 +444,7 @@ FUNC_MULTI:
     mov eax,4
     mov ebx,1
     mov ecx,num2
-    mov edx,10
+    mov edx,4
     int 80h
 
     mov eax,4
@@ -450,7 +468,7 @@ FUNC_DIVI:
     mov eax,4
     mov ebx,1
     mov ecx,num1
-    mov edx,10
+    mov edx,4
     int 80h
 
     mov eax,4
@@ -462,7 +480,7 @@ FUNC_DIVI:
     mov eax,4
     mov ebx,1
     mov ecx,num2
-    mov edx,10
+    mov edx,4
     int 80h
 
     mov eax,4
@@ -486,7 +504,7 @@ FUNC_MOD:
     mov eax,4
     mov ebx,1
     mov ecx,num1
-    mov edx,10
+    mov edx,4
     int 80h
 
     mov eax,4
@@ -498,7 +516,7 @@ FUNC_MOD:
     mov eax,4
     mov ebx,1
     mov ecx,num2
-    mov edx,10
+    mov edx,4
     int 80h
 
     mov eax,4
