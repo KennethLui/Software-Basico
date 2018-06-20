@@ -37,18 +37,18 @@ SIZE_SAIR EQU $-SAIR
 FUNC_ESCOLHIDO db "A FUNÇÃO ESCOLHIDA FOI: "
 SIZE_FUNC_ESCOLHIDO EQU $-FUNC_ESCOLHIDO
 
-msg_num1 db "Insira o primeiro numero: ",0dh,0ah
+msg_num1 db "Insira o primeiro numero: "
 SIZE_msg1 EQU $-msg_num1
-msg_num2 db "Insira o segundo numero: ",0dh,0ah
+msg_num2 db "Insira o segundo numero: "
 SIZE_msg2 EQU $-msg_num2
-msg_resultado db "O resultado e: ",0dh,0ah
+msg_resultado db "O resultado e: "
 SIZE_resultado EQU $-msg_resultado
 nwln db 0Dh,0Ah
 SIZE_nwln EQU $-nwln
 
 section .bss
-num1 resw 2
-num2 resw 2
+num1 resb 1
+num2 resb 1
 resultado resb 16
 NOME resb 16
 ESCOLHA resb 1
@@ -75,6 +75,12 @@ _start:
     mov edx,16
     int 80h
 
+    mov eax,4
+    mov ebx,1
+    mov ecx,nwln
+    mov edx,SIZE_nwln
+    int 80h
+
 ;MENSAGEM DE BOAS VINDAS
 
     mov eax,4
@@ -93,6 +99,12 @@ _start:
     mov ebx,1
     mov ecx,BOAS_VINDAS_RESTO
     mov edx,SIZE_BOAS_VINDAS_RESTO
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,nwln
+    mov edx,SIZE_nwln
     int 80h
 
 ;MENU
@@ -151,13 +163,20 @@ _start:
     mov edx,1
     int 80h
 
+    sub BYTE [ESCOLHA],0x30
+
     mov eax,4
     mov ebx,1
     mov ecx,nwln
-    mov edx,nwln_SIZE
+    mov edx,SIZE_nwln
     int 80h
 
 ;COMPARAR
+;Tentativa de zerar buffer
+;    mov eax,0
+;    mov ebx,0
+;    mov ecx,0
+;    mov edx,0
 
     mov eax,4
     mov ebx,1
@@ -168,7 +187,7 @@ _start:
     mov eax,3
     mov ebx,0
     mov ecx,num1
-    mov edx,2
+    mov edx,1
     int 80h
 
     mov eax,4
@@ -180,7 +199,7 @@ _start:
     mov eax,3
     mov ebx,0
     mov ecx,num2
-    mov edx,2
+    mov edx,1
     int 80h
 
     mov BL,[num2]
@@ -202,7 +221,7 @@ _start:
     mov eax,4
     mov ebx,1
     mov ecx,resultado
-    mov edx,1
+    mov edx,16
 
     mov eax,4
     mov ebx,1
