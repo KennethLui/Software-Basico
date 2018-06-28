@@ -83,11 +83,19 @@ IGUAL db " = "
 SIZE_IGUAL EQU $-IGUAL
 ;FIM DAS MENSAGENS DE FUNÇÕES
 
-msg_num1 db "Insira o primeiro numero: "
+;APAGA_SCREEN db "Apaga tela",\033[H\033[2J
+;SIZE_APAGA_SCREEN EQU $-APAGA_SCREEN
+msg_NOVAOP db "Fazer nova operação?",10,0
+SIZE_msg_NOVAOP EQU $-msg_NOVAOP
+msg_SIM db "- 1: SIM",10,0
+SIZE_msg_SIM EQU $-msg_SIM
+msg_NAO db "- 2: NÃO",10,0
+SIZE_msg_NAO EQU $-msg_NAO
+msg_num1 db "Insira o primeiro número: "
 SIZE_msg1 EQU $-msg_num1
-msg_num2 db "Insira o segundo numero: "
+msg_num2 db "Insira o segundo número: "
 SIZE_msg2 EQU $-msg_num2
-msg_resultado db 0dh,0ah,"O resultado e: "
+msg_resultado db 0dh,0ah,"O resultado é: "
 SIZE_resultado EQU $-msg_resultado
 nwln db 0Dh,0Ah
 SIZE_nwln EQU $-nwln
@@ -95,7 +103,7 @@ SIZE_nwln EQU $-nwln
 section .bss
 num1 resb 4
 num2 resb 4
-resultado resb 4
+resultado resb 8
 NOME resb 100
 ESCOLHA resb 2
 
@@ -154,6 +162,7 @@ _start:
     int 80h
 
 ;MENU
+loop_MENU:
     mov eax,4
     mov ebx,1
     mov ecx,MENU
@@ -219,6 +228,10 @@ _start:
 
 ;MOSTRAR A OPÇÃO
 
+    ;mov DWORD [num1],0
+    ;mov DWORD [num2],0
+    ;mov DWORD [resultado],0
+
     mov eax,4
     mov ebx,1
     mov ecx,FUNC_ESCOLHIDO
@@ -229,6 +242,19 @@ _start:
     mov ebx,1
     mov ecx,ESCOLHA
     mov edx,2
+    int 80h
+
+    sub BYTE [ESCOLHA],0x30
+
+    cmp BYTE [ESCOLHA],6
+    jne NOT_SAIR
+    call FUNC_SAIR
+NOT_SAIR:
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,nwln
+    mov edx,SIZE_nwln
     int 80h
 
     mov eax,4
@@ -243,6 +269,8 @@ _start:
     mov edx,4
     int 80h
 
+    sub DWORD [num1],0xa00
+
     mov eax,4
     mov ebx,1
     mov ecx,msg_num2
@@ -255,8 +283,15 @@ _start:
     mov edx,4
     int 80h
 
+    sub DWORD [num2],0xa00
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,nwln
+    mov edx,SIZE_nwln
+    int 80h
+
     ;COMPARAR
-    sub BYTE [ESCOLHA],0x30
 
     mov eax,[num1]
     sub eax,0x30
@@ -291,11 +326,13 @@ NOT_DIVI:
     call FUNC_MOD
 
 NOT_MOD:
-    cmp BYTE [ESCOLHA],6
-    jne NOT_SAIR
-    call FUNC_SAIR
-NOT_SAIR:
     ;FIM DA COMPARAÇÃO
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,nwln
+    mov edx,SIZE_nwln
+    int 80h
 
     ;POP WORD [resultado]
 
@@ -308,7 +345,7 @@ NOT_SAIR:
     mov eax,4
     mov ebx,1
     mov ecx,resultado
-    mov edx,4
+    mov edx,2
     int 80h
 
     mov eax,4
@@ -317,9 +354,52 @@ NOT_SAIR:
     mov edx,SIZE_nwln
     int 80h
 
-    mov eax,1
-    mov ebx,0
+    mov eax,4
+    mov ebx,1
+    mov ecx,nwln
+    mov edx,SIZE_nwln
     int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,msg_NOVAOP
+    mov edx,SIZE_msg_NOVAOP
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,msg_SIM
+    mov edx,SIZE_msg_SIM
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,msg_NAO
+    mov edx,SIZE_msg_NAO
+    int 80h
+
+    mov eax,3
+    mov ebx,0
+    mov ecx,ESCOLHA
+    mov edx,2
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,nwln
+    mov edx,SIZE_nwln
+    int 80h
+
+    sub BYTE [ESCOLHA],0x30
+
+    cmp BYTE [ESCOLHA],1
+    jne FUNC_SAIR
+
+    jmp loop_MENU
+
+    ;mov eax,1
+    ;mov ebx,0
+    ;int 80h
 
 FUNC_SOMA:
     ;MOSTRA MENSAGEM DA FUNÇÃO
@@ -418,6 +498,22 @@ FUNC_SUBT:
     int 80h
     ;TERMINOU DE MOSTRAR OPERAÇÃO
 
+    mov eax,0
+    mov eax,[num1]
+    sub eax,0x30
+    mov ebx,[num2]
+    sub ebx,0x30
+    sub eax,ebx
+    add eax,0x30
+
+    mov [resultado],eax
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,resultado
+    mov edx,4
+    int 80h
+
     ret
 
 FUNC_MULTI:
@@ -453,6 +549,24 @@ FUNC_MULTI:
     mov edx,SIZE_IGUAL
     int 80h
     ;TERMINOU DE MOSTRAR OPERAÇÃO
+
+    mov eax,0
+    mov al,[num1]
+    sub al,0x30
+    mov bl,[num2]
+    sub bl,0x30
+
+    imul bl
+
+    add ax,0x30
+
+    mov [resultado],ax
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,resultado
+    mov edx,1
+    int 80h
 
     ret
 
@@ -490,6 +604,22 @@ FUNC_DIVI:
     int 80h
     ;TERMINOU DE MOSTRAR OPERAÇÃO
 
+    mov eax,0
+    mov ax,[num1]
+    sub ax,0x30
+    mov bl,[num2]
+    sub bl,0x30
+    idiv bl
+    add al,0x30
+
+    mov [resultado],al
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,resultado
+    mov edx,4
+    int 80h
+
     ret
 
 FUNC_MOD:
@@ -525,6 +655,22 @@ FUNC_MOD:
     mov edx,SIZE_IGUAL
     int 80h
     ;TERMINOU DE MOSTRAR OPERAÇÃO
+
+    mov eax,0
+    mov ax,[num1]
+    sub ax,0x30
+    mov bl,[num2]
+    sub bl,0x30
+    idiv bl
+    add ah,0x30
+
+    mov [resultado],ah
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,resultado
+    mov edx,4
+    int 80h
 
     ret
 
