@@ -100,12 +100,15 @@ SIZE_resultado EQU $-msg_resultado
 nwln db 0Dh,0Ah
 SIZE_nwln EQU $-nwln
 
+FIM_DE_STRING EQU 0
+
 section .bss
 num1 resb 4
 num2 resb 4
 resultado resb 8
 NOME resb 100
 ESCOLHA resb 2
+STRING resb 10
 
 section .text
 _start:
@@ -257,33 +260,24 @@ NOT_SAIR:
     mov edx,SIZE_nwln
     int 80h
 
-    mov eax,4
-    mov ebx,1
-    mov ecx,msg_num1
-    mov edx,SIZE_msg1
-    int 80h
+    call LER_STRINGS
 
-    mov eax,3
-    mov ebx,0
-    mov ecx,num1
-    mov edx,4
-    int 80h
+;CONVERTENDO DIGITO ÚNICO PARA ASCII - usar se aidna não houver funções de conversão
 
-    sub DWORD [num1],0xa00
+    ;sub DWORD [num1],0xa00
+    ;sub DWORD [num2],0xa00
 
-    mov eax,4
-    mov ebx,1
-    mov ecx,msg_num2
-    mov edx,SIZE_msg2
-    int 80h
+;COMVERSÃO DE STRING PARA INTEIRO
 
-    mov eax,3
-    mov ebx,0
-    mov ecx,num2
-    mov edx,4
-    int 80h
+    lea ESI,[num1]
+    call STRING_PARA_INTEIRO
+    mov [num1],eax
 
-    sub DWORD [num2],0xa00
+    lea ESI,[num2]
+    call STRING_PARA_INTEIRO
+    mov [num2],eax
+
+;FIM DA CONVERSÃO DE STRING PARA INTEIRO
 
     mov eax,4
     mov ebx,1
@@ -293,13 +287,13 @@ NOT_SAIR:
 
     ;COMPARAR
 
-    mov eax,[num1]
-    sub eax,0x30
-    push WORD [num1]
+    ;mov eax,[num1]
+    ;sub eax,0x30
+    ;push WORD [num1]
 
-    mov eax,[num2]
-    sub eax,0x30
-    push WORD [num2]
+    ;mov eax,[num2]
+    ;sub eax,0x30
+    ;push WORD [num2]
 
     cmp BYTE [ESCOLHA],1
     jne NOT_SOMA
@@ -336,16 +330,40 @@ NOT_MOD:
 
     ;POP WORD [resultado]
 
+;CONVERSÃO DO RESULTADO DE ASCII PARA STRING_PARA_INTEIRO
+
+    lea ESI,[STRING]
+    mov eax,[resultado]
+    call INTEIRO_PARA_STRING
+    ;mov DWORD [resultado],eax
+
+    ;mov ecx,eax
+    ;mov eax,4
+    ;mov ebx,1
+    ;mov edx,2
+    ;int 80h
+
+    ;mov eax,4
+    ;mov ebx,1
+    ;mov ecx,MSG_TESTE
+    ;mov edx,SIZE_MSG_TESTE
+    ;int 80h
+
+;FIM DA CONVERSÃO
+
     mov eax,4
     mov ebx,1
     mov ecx,msg_resultado
     mov edx,SIZE_resultado
     int 80h
 
+    mov eax,[resultado]
+    lea esi,[STRING]
+    call INTEIRO_PARA_STRING
+    mov ecx,eax
     mov eax,4
     mov ebx,1
-    mov ecx,resultado
-    mov edx,2
+    mov edx,4
     int 80h
 
     mov eax,4
@@ -410,9 +428,14 @@ FUNC_SOMA:
     int 80h
 
     ;MOSTRA OPERAÇÃO
+    mov eax,[num1]
+    lea esi,[STRING]
+    call INTEIRO_PARA_STRING
+    mov ecx,eax
+
     mov eax,4
     mov ebx,1
-    mov ecx,num1
+    ;mov ecx,num1
     mov edx,4
     int 80h
 
@@ -422,9 +445,14 @@ FUNC_SOMA:
     mov edx,SIZE_MAIS
     int 80h
 
+    mov eax,[num2]
+    lea esi,[STRING]
+    call INTEIRO_PARA_STRING
+    mov ecx,eax
+
     mov eax,4
     mov ebx,1
-    mov ecx,num2
+    ;mov ecx,num2
     mov edx,4
     int 80h
 
@@ -447,19 +475,26 @@ FUNC_SOMA:
     ;pop ebp
     mov eax,0
     mov eax,[num1]
-    sub eax,0x30
+    ;sub eax,0x30
     mov ebx,[num2]
-    sub ebx,0x30
+    ;sub ebx,0x30
     add eax,ebx
-    add eax,0x30
+    ;add eax,0x30
 
     mov [resultado],eax
-
+    lea esi,[STRING]
+    call INTEIRO_PARA_STRING
+    push eax
+    mov ecx,eax
     mov eax,4
     mov ebx,1
-    mov ecx,resultado
     mov edx,4
     int 80h
+    ;mov eax,4
+    ;mov ebx,1
+    ;mov ecx,resultado
+    ;mov edx,4
+    ;int 80h
 
     leave
     ret 4
@@ -473,9 +508,14 @@ FUNC_SUBT:
     int 80h
 
     ;MOSTRA OPERAÇÃO
+    mov eax,[num1]
+    lea esi,[STRING]
+    call INTEIRO_PARA_STRING
+    mov ecx,eax
+
     mov eax,4
     mov ebx,1
-    mov ecx,num1
+    ;mov ecx,num1
     mov edx,4
     int 80h
 
@@ -485,9 +525,14 @@ FUNC_SUBT:
     mov edx,SIZE_MENOS
     int 80h
 
+    mov eax,[num2]
+    lea esi,[STRING]
+    call INTEIRO_PARA_STRING
+    mov ecx,eax
+
     mov eax,4
     mov ebx,1
-    mov ecx,num2
+    ;mov ecx,num1
     mov edx,4
     int 80h
 
@@ -525,9 +570,14 @@ FUNC_MULTI:
     int 80h
 
     ;MOSTRA OPERAÇÃO
+    mov eax,[num1]
+    lea esi,[STRING]
+    call INTEIRO_PARA_STRING
+    mov ecx,eax
+
     mov eax,4
     mov ebx,1
-    mov ecx,num1
+    ;mov ecx,num1
     mov edx,4
     int 80h
 
@@ -537,9 +587,14 @@ FUNC_MULTI:
     mov edx,SIZE_MULTIPLICA
     int 80h
 
+    mov eax,[num2]
+    lea esi,[STRING]
+    call INTEIRO_PARA_STRING
+    mov ecx,eax
+
     mov eax,4
     mov ebx,1
-    mov ecx,num2
+    ;mov ecx,num1
     mov edx,4
     int 80h
 
@@ -579,9 +634,14 @@ FUNC_DIVI:
     int 80h
 
     ;MOSTRA A OPERAÇÃO
+    mov eax,[num1]
+    lea esi,[STRING]
+    call INTEIRO_PARA_STRING
+    mov ecx,eax
+
     mov eax,4
     mov ebx,1
-    mov ecx,num1
+    ;mov ecx,num1
     mov edx,4
     int 80h
 
@@ -591,9 +651,14 @@ FUNC_DIVI:
     mov edx,SIZE_DIVIDE
     int 80h
 
+    mov eax,[num2]
+    lea esi,[STRING]
+    call INTEIRO_PARA_STRING
+    mov ecx,eax
+
     mov eax,4
     mov ebx,1
-    mov ecx,num2
+    ;mov ecx,num1
     mov edx,4
     int 80h
 
@@ -631,9 +696,14 @@ FUNC_MOD:
     int 80h
 
     ;MOSTRA OPERAÇÃO
+    mov eax,[num1]
+    lea esi,[STRING]
+    call INTEIRO_PARA_STRING
+    mov ecx,eax
+
     mov eax,4
     mov ebx,1
-    mov ecx,num1
+    ;mov ecx,num1
     mov edx,4
     int 80h
 
@@ -643,9 +713,14 @@ FUNC_MOD:
     mov edx,SIZE_MODULO
     int 80h
 
+    mov eax,[num2]
+    lea esi,[STRING]
+    call INTEIRO_PARA_STRING
+    mov ecx,eax
+
     mov eax,4
     mov ebx,1
-    mov ecx,num2
+    ;mov ecx,num1
     mov edx,4
     int 80h
 
@@ -692,3 +767,101 @@ FUNC_SAIR:
     mov eax,1
     mov ebx,0
     int 80h
+
+LER_STRINGS:
+    mov eax,4
+    mov ebx,1
+    mov ecx,msg_num1
+    mov edx,SIZE_msg1
+    int 80h
+
+    mov eax,3
+    mov ebx,0
+    mov ecx,num1
+    mov edx,4
+    int 80h
+
+    mov eax,4
+    mov ebx,1
+    mov ecx,msg_num2
+    mov edx,SIZE_msg2
+    int 80h
+
+    mov eax,3
+    mov ebx,0
+    mov ecx,num2
+    mov edx,4
+    int 80h
+
+    ret
+
+
+STRING_PARA_INTEIRO:
+    ;ECX = quantos dígitos tem. A principio 4 dígitos
+    ;EBX = acumulador para o número final
+    ;ESI = ponteiro para a string
+
+;    xor ebx,ebx
+;    mov ecx,4
+;  CVT_STR_INT:
+;    mov edx,10
+;    movzx eax,BYTE[ESI]
+;    inc ESI
+;    sub al,0x30
+;    imul ebx,10
+;    ;imul edx
+;    add ebx,eax
+;    loop CVT_STR_INT
+;    mov eax,ebx
+
+;---------------------------------
+
+xor ebx,ebx    ; clear ebx
+.next_digit:
+movzx eax,byte[esi]
+
+sub eax,'0'    ; convert from ASCII to number
+cmp al,9
+jbe .entrada_loop
+
+xor eax,eax
+ret
+.entrada_loop:
+inc esi
+imul ebx,10
+add ebx,eax   ; ebx = ebx*10 + eax
+
+movzx edx,byte[esi]
+sub edx,'0'
+cmp edx,9
+
+jbe .next_digit  ; while (--ecx)
+mov eax,ebx
+ret
+
+;---------------------------------
+    ret
+
+INTEIRO_PARA_STRING:
+    ;ECX = quantos dígitos tem. A principio 4 dígitos
+    ;EAX = contém o número em inteiro = valor
+    ;ESI = ponteiro para a string -> str[i]
+    add ESI,9
+    mov BYTE [ESI],FIM_DE_STRING
+    mov ebx,10
+    mov ecx,4
+  CVT_INT_STR:
+    xor edx,edx
+    div ebx
+    ;ovzx eax,ax    ;eax contém valor / 10
+    add dl,0x30     ;bh contem valor % 10 + 0x30
+    dec ESI
+    mov [ESI],dl    ;str[i]=(char)((valor%10)+0x30)
+    test eax,eax       ;if valor!=0
+    ;je SAI_CVT_INT_STR
+    jnz CVT_INT_STR
+
+  SAI_CVT_INT_STR:
+    mov eax,ESI
+
+    ret
