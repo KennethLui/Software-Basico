@@ -101,8 +101,8 @@ SIZE_nwln EQU $-nwln
 FIM_DE_STRING EQU 0
 
 section .bss
-num1 resb 4
-num2 resb 4
+num1 resb 5
+num2 resb 5
 resultado resb 8
 NOME resb 100
 ESCOLHA resb 2
@@ -492,6 +492,17 @@ FUNC_MULTI:
     int 80h
 
     ;MOSTRA OPERAÇÃO
+;    mov eax,[num1]
+;    cmp eax,0
+;    jge CONT_MULT
+;
+;    neg eax
+;    mov [num1],eax
+;    mov eax,1
+;    push eax
+
+;CONT_MULT:
+
     mov eax,[num1]
     lea esi,[STRING]
     call INTEIRO_PARA_STRING
@@ -530,8 +541,8 @@ FUNC_MULTI:
     mov bl,[num2]
 
     imul bl
-
-    mov [resultado],ax
+    movsx eax,ax
+    mov [resultado],eax
     lea esi,[STRING]
     call INTEIRO_PARA_STRING
     mov ecx,eax
@@ -590,8 +601,8 @@ FUNC_DIVI:
     mov bl,[num2]
     idiv bl
 
-    mov [resultado],al
-    mov eax,[resultado]
+    movsx eax,al
+    mov [resultado],eax
     lea esi,[STRING]
     call INTEIRO_PARA_STRING
     mov ecx,eax
@@ -650,8 +661,8 @@ FUNC_MOD:
     mov bl,[num2]
     idiv bl
 
-    mov [resultado],ah
-    mov eax,[resultado]
+    movsx eax,ah
+    mov [resultado],eax
     lea esi,[STRING]
     call INTEIRO_PARA_STRING
     mov ecx,eax
@@ -692,7 +703,7 @@ LER_STRINGS:
     mov eax,3
     mov ebx,0
     mov ecx,num1
-    mov edx,4
+    mov edx,5
     int 80h
 
     mov eax,4
@@ -704,20 +715,29 @@ LER_STRINGS:
     mov eax,3
     mov ebx,0
     mov ecx,num2
-    mov edx,4
+    mov edx,5
     int 80h
 
     ret
 
 
 STRING_PARA_INTEIRO:
-    ;ECX = quantos dígitos tem. A principio 4 dígitos
     ;EBX = acumulador para o número final
     ;ESI = ponteiro para a string
 
 xor ebx,ebx    ; zerar ebx
+mov ecx,0
+
 .next_digit:
 movzx eax,byte[esi]
+
+inc ecx
+cmp eax,"-"
+jne .CONTINUA
+
+inc esi
+jmp .next_digit
+.CONTINUA:
 
 sub eax,'0'
 cmp al,9
@@ -735,6 +755,17 @@ sub edx,'0'
 cmp edx,9
 
 jbe .next_digit  ; while
+
+sub esi,ECX
+movzx eax,BYTE [ESI]
+cmp eax,"-"
+jne fim_cvt
+neg ebx
+
+
+
+fim_cvt:
+
 mov eax,ebx
 ret
 
@@ -745,10 +776,19 @@ INTEIRO_PARA_STRING:
     ;ECX = quantos dígitos tem. A principio 4 dígitos
     ;EAX = contém o número em inteiro = valor
     ;ESI = ponteiro para a string -> str[i]
+
+    mov ecx,0 ;FLAG
+    cmp eax,0
+    jge CONTINUA_INT2STR
+    mov ecx,1
+    neg eax
+
+    CONTINUA_INT2STR:
+
     add ESI,9
     mov BYTE [ESI],FIM_DE_STRING
     mov ebx,10
-    mov ecx,4
+    ;mov ecx,4
   CVT_INT_STR:
     xor edx,edx
     div ebx
@@ -757,6 +797,19 @@ INTEIRO_PARA_STRING:
     mov [ESI],dl    ;str[i]=(char)((valor%10)+0x30)
     test eax,eax       ;if valor!=0
     jnz CVT_INT_STR
+
+    cmp ecx,1
+    jne SAI_CVT_INT_STR
+    dec esi
+    mov BYTE [esi],0x2d
+
+    ;pushad
+    ;mov eax,4
+    ;mov ebx,1
+    ;mov ecx,MSG_TESTE
+    ;mov edx,SIZE_MSG_TESTE
+    ;INT 80h
+    ;popad
 
   SAI_CVT_INT_STR:
     mov eax,ESI
